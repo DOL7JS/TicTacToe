@@ -1,41 +1,71 @@
+using Mirror;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
-    [SerializeField]
+    Sprite boxClear;
     Sprite boxCross;
-    [SerializeField]
-    Sprite boxCircle;
+    public Sprite boxCircle;
     [SerializeField]
     Text textTurn;
-
-    int player = 0;
+    [SerializeField]
+    Button buttonReset;
+    [SerializeField]
+    GameObject playground;
+    //int player = 1;
+    [SyncVar(hook = nameof(OnTurnStateChanged))]
+    EnumPlayerType turn = EnumPlayerType.CROSS;
     int scoreToWin = 3;
-    private int[,] gameboard;
+    private Box[,] gameboard;
 
     void Start()
     {
         InitGameBoard();
+        boxClear = Images.BoxClear;
+        boxCross = Images.BoxCross;
+        boxCircle = Images.BoxCircle;
     }
 
     private void InitGameBoard()
     {
-        gameboard = new int[3, 3];
+        gameboard = new Box[3, 3];
+        int boxCounter = 0;
         for (int i = 0; i < gameboard.GetLength(0); i++)
         {
             for (int j = 0; j < gameboard.GetLength(1); j++)
-
             {
-                gameboard[i, j] = -1;
+                gameboard[i, j] = playground.transform.GetChild(boxCounter++).GetComponent<Box>();
+                gameboard[i, j].gameboard = gameboard;
             }
         }
+        turn = EnumPlayerType.CROSS;
+        textTurn.text = "Turn: Player X";
+    }
+    [Command(requiresAuthority = false)]
+    public void TurnChanged(EnumPlayerType newState)
+    {
+        turn = newState;
     }
 
+    private void OnTurnStateChanged(EnumPlayerType oldState, EnumPlayerType newState)
+    {
+        turn = newState;
+        textTurn.text = turn == EnumPlayerType.CROSS ? "Turn: Player X" : "Turn: Player O";
+    }
     public void OnClickBox()
     {
+        //Debug.Log("PLAYER: " + NetworkClient.localPlayer.gameObject.GetComponent<PlayerTicTac>().playerType.ToString());
+        //Debug.Log("TURN: " + turn.ToString());
+
+
+        if (NetworkClient.localPlayer.gameObject.GetComponent<PlayerTicTac>().playerType != turn)
+        {
+            Debug.Log("Not your turn");
+            return;
+        }
         GameObject currentBox = EventSystem.current.currentSelectedGameObject;
         int row = currentBox.GetComponent<Box>().row;
         int column = currentBox.GetComponent<Box>().column;
@@ -43,26 +73,36 @@ public class GameManager : MonoBehaviour
 
         if (value == -1)
         {
-            currentBox.GetComponent<Box>().value = player;
-            currentBox.GetComponent<Image>().sprite = player == 1 ? boxCross : boxCircle;
-            gameboard[row, column] = player;
-            if (CheckPotentialWin(row, column, player))
+            currentBox.GetComponent<Box>().value = (int)turn;
+            SetImage(currentBox.GetComponent<Box>(), (int)turn);
+            gameboard[row, column].GetComponent<Box>().value = (int)turn;
+            if (CheckPotentialWin(row, column, (int)turn))
             {
-                textTurn.text = "Player " + (player) + " wins !";
-                Debug.Log("WINNER");
+                textTurn.text = "Player " + ((int)turn) + " wins !";
+                buttonReset.gameObject.SetActive(true);
+                SetButtonInteractibility(false);
                 return;
             }
             if (CheckPotentialEnd())
             {
                 textTurn.text = "GAME OVER";
-                Debug.Log("Game over");
+                buttonReset.gameObject.SetActive(true);
+                SetButtonInteractibility(false);
                 return;
             }
 
-            player = player == 1 ? 0 : 1;
-            textTurn.text = player == 1 ? "Turn: Player X" : "Turn: Player O";
-            Debug.Log("NAME: " + currentBox.name);
-
+            EnumPlayerType type;
+            if (turn == EnumPlayerType.CROSS)
+            {
+                type = EnumPlayerType.CIRCLE;
+            }
+            else
+            {
+                type = EnumPlayerType.CROSS;
+            }
+            turn = type;
+            TurnChanged(type);
+            textTurn.text = turn == EnumPlayerType.CROSS ? "Turn: Player X" : "Turn: Player O";
         }
         else
         {
@@ -72,14 +112,17 @@ public class GameManager : MonoBehaviour
 
     }
 
+    public void SetImage(Box box, int value)
+    {
+        box.GetComponent<Image>().sprite = value == 1 ? boxCross : boxCircle;
+    }
     private bool CheckPotentialEnd()
     {
-        int sum = 0;
         for (int i = 0; i < gameboard.GetLength(0); i++)
         {
             for (int j = 0; j < gameboard.GetLength(1); j++)
             {
-                if (gameboard[i, j] == -1)
+                if (gameboard[i, j].value == -1)
                 {
                     return false;
                 }
@@ -91,8 +134,10 @@ public class GameManager : MonoBehaviour
 
     private bool CheckPotentialWin(int row, int column, int player)
     {
-
-        return CheckPotentialRowWin(row, player) || CheckPotentialColumnWin(column, player);
+        return CheckPotentialRowWin(row, player)
+            || CheckPotentialColumnWin(column, player)
+            || CheckPotentialDiagonalWin(row, column, player)
+            || CheckPotentialDiagonal2Win(row, column, player);
     }
 
     private bool CheckPotentialColumnWin(int column, int player)
@@ -100,12 +145,11 @@ public class GameManager : MonoBehaviour
         int score = 0;
         for (int i = 0; i < gameboard.GetLength(1); i++)
         {
-            if (gameboard[i, column] == player)
+            if (gameboard[i, column].value == player)
             {
                 score++;
             }
         }
-        Debug.Log("ScoreC:" + score);
         return score >= scoreToWin;
     }
 
@@ -114,7 +158,7 @@ public class GameManager : MonoBehaviour
         int score = 0;
         for (int i = 0; i < gameboard.GetLength(0); i++)
         {
-            if (gameboard[row, i] == player)
+            if (gameboard[row, i].value == player)
             {
                 score++;
             }
@@ -122,6 +166,88 @@ public class GameManager : MonoBehaviour
         return score >= scoreToWin;
     }
 
+    private bool CheckPotentialDiagonalWin(int row, int column, int player)
+    {
+        int score = 0;
+        int actualColumn = column + 1;
+        for (int i = row + 1; i < gameboard.GetLength(0) && actualColumn < gameboard.GetLength(1); i++)
+        {
+            if (gameboard[i, actualColumn].value == player)
+            {
+                score++;
+            }
+
+            actualColumn++;
+        }
+
+        actualColumn = column - 1;
+        for (int i = row - 1; i >= 0 && actualColumn >= 0; i--)
+        {
+
+            if (gameboard[i, actualColumn].value == player)
+            {
+                score++;
+            }
+
+            actualColumn--;
+        }
+        return score + 1 >= scoreToWin;
+    }
+
+    private bool CheckPotentialDiagonal2Win(int row, int column, int player)
+    {
+        int score = 0;
+        int actualColumn = column - 1;
+        for (int i = row + 1; i < gameboard.GetLength(0) && actualColumn >= 0; i++)
+        {
+            if (gameboard[i, actualColumn].value == player)
+            {
+                score++;
+            }
+
+            actualColumn--;
+        }
+
+        actualColumn = column + 1;
+        for (int i = row - 1; i >= 0 && actualColumn < gameboard.GetLength(1); i--)
+        {
+
+            if (gameboard[i, actualColumn].value == player)
+            {
+                score++;
+            }
+
+            actualColumn++;
+        }
+        return score + 1 >= scoreToWin;
+    }
+
+    public void OnClickButtonReset()
+    {
+        InitGameBoard();
+        foreach (Transform box in playground.GetComponentsInChildren<Transform>())
+        {
+            if (box.gameObject.GetComponent<Image>() != null)
+            {
+                box.gameObject.GetComponent<Image>().sprite = boxClear;
+                box.gameObject.GetComponent<Box>().value = -1;
+                Debug.Log("Box: " + box.gameObject.name);
+            }
+
+        }
+        buttonReset.gameObject.SetActive(false);
+        SetButtonInteractibility(true);
+    }
+    private void SetButtonInteractibility(bool value)
+    {
+        foreach (Transform box in playground.GetComponentsInChildren<Transform>())
+        {
+            if (box.gameObject.GetComponent<Image>() != null)
+            {
+                box.gameObject.GetComponent<Button>().interactable = value;
+            }
+        }
+    }
     private void ShowGameBoard()
     {
         string mess = "";

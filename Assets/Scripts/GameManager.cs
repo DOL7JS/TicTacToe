@@ -1,4 +1,7 @@
 using Mirror;
+using Mirror.Discovery;
+using Mirror.Examples.Pong;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -8,26 +11,36 @@ public class GameManager : NetworkBehaviour
 {
     Sprite boxClear;
     Sprite boxCross;
-    public Sprite boxCircle;
+    Sprite boxCircle;
     [SerializeField]
     Text textTurn;
     [SerializeField]
     Button buttonReset;
     [SerializeField]
     GameObject playground;
+  
     //int player = 1;
     [SyncVar(hook = nameof(OnTurnStateChanged))]
     EnumPlayerType turn = EnumPlayerType.CROSS;
-    int scoreToWin = 3;
+    [SyncVar(hook = nameof(OnGameStateChanged))]
+    string gameState = "playing";
+    readonly int scoreToWin = 3;
     private Box[,] gameboard;
 
+
+    private void Awake()
+    {
+       
+    }
     void Start()
     {
         InitGameBoard();
         boxClear = Images.BoxClear;
         boxCross = Images.BoxCross;
         boxCircle = Images.BoxCircle;
+       
     }
+
 
     private void InitGameBoard()
     {
@@ -44,6 +57,22 @@ public class GameManager : NetworkBehaviour
         turn = EnumPlayerType.CROSS;
         textTurn.text = "Turn: Player X";
     }
+
+    [Command(requiresAuthority = false)]
+    public void GameStateChanged(string newState)
+    {
+        gameState = newState;
+    }
+
+    private void OnGameStateChanged(string oldState, string newState)
+    {
+        gameState = newState;
+        textTurn.text = newState;
+        buttonReset.gameObject.SetActive(gameState.Contains("wins") || gameState.Contains("GAME OVER"));
+    }
+
+
+
     [Command(requiresAuthority = false)]
     public void TurnChanged(EnumPlayerType newState)
     {
@@ -55,12 +84,10 @@ public class GameManager : NetworkBehaviour
         turn = newState;
         textTurn.text = turn == EnumPlayerType.CROSS ? "Turn: Player X" : "Turn: Player O";
     }
+
+
     public void OnClickBox()
     {
-        //Debug.Log("PLAYER: " + NetworkClient.localPlayer.gameObject.GetComponent<PlayerTicTac>().playerType.ToString());
-        //Debug.Log("TURN: " + turn.ToString());
-
-
         if (NetworkClient.localPlayer.gameObject.GetComponent<PlayerTicTac>().playerType != turn)
         {
             Debug.Log("Not your turn");
@@ -78,7 +105,8 @@ public class GameManager : NetworkBehaviour
             gameboard[row, column].GetComponent<Box>().value = (int)turn;
             if (CheckPotentialWin(row, column, (int)turn))
             {
-                textTurn.text = "Player " + ((int)turn) + " wins !";
+                textTurn.text = "Player " + ((int)turn == 1 ? "X" : "O") + " wins !";
+                GameStateChanged(textTurn.text);
                 buttonReset.gameObject.SetActive(true);
                 SetButtonInteractibility(false);
                 return;
@@ -86,6 +114,7 @@ public class GameManager : NetworkBehaviour
             if (CheckPotentialEnd())
             {
                 textTurn.text = "GAME OVER";
+                GameStateChanged(textTurn.text);
                 buttonReset.gameObject.SetActive(true);
                 SetButtonInteractibility(false);
                 return;
@@ -224,14 +253,16 @@ public class GameManager : NetworkBehaviour
 
     public void OnClickButtonReset()
     {
-        InitGameBoard();
+        //InitGameBoard();
+        textTurn.text = turn == EnumPlayerType.CROSS ? "Turn: Player X" : "Turn: Player O";
+        GameStateChanged(textTurn.text);
         foreach (Transform box in playground.GetComponentsInChildren<Transform>())
         {
             if (box.gameObject.GetComponent<Image>() != null)
             {
                 box.gameObject.GetComponent<Image>().sprite = boxClear;
                 box.gameObject.GetComponent<Box>().value = -1;
-                Debug.Log("Box: " + box.gameObject.name);
+                box.gameObject.GetComponent<Box>().OnBoxValueChanged();
             }
 
         }

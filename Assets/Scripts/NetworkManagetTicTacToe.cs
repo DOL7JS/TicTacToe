@@ -11,20 +11,16 @@ namespace Mirror.Examples.Pong
     {
         public GameObject gameManager;
         public GameObject playground;
-        public Text playerName;
+        [SerializeField]
+        Text textPlayer;
 
 
         public override void OnServerAddPlayer(NetworkConnectionToClient conn)
         {
             base.OnServerAddPlayer(conn);
-            Debug.Log("PlayersNum: " + numPlayers);
             if (numPlayers == 2)
             {
-                //NetworkServer.Spawn(gameManager);
-                //NetworkServer.Spawn(playground);
-
-               
-                playerName.text = "Player O";
+                textPlayer.text = "Player O";
             }
         }
 

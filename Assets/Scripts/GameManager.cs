@@ -9,9 +9,9 @@ using UnityEngine.UI;
 
 public class GameManager : NetworkBehaviour
 {
-    Sprite boxClear;
-    Sprite boxCross;
-    Sprite boxCircle;
+    private Sprite boxClear;
+    private Sprite boxCross;
+    private Sprite boxCircle;
     [SerializeField]
     public Text textTurn;
     [SerializeField]
@@ -49,17 +49,14 @@ public class GameManager : NetworkBehaviour
             }
         }
         turn = EnumPlayerType.NONE;
-        Debug.Log("Clint: " + !isServer);
         if (!isServer)
         {
             textTurn.text = "Turn: Player X";
-            //TurnChanged(EnumPlayerType.CROSS);
             turn = EnumPlayerType.CROSS;
         }
         else
         {
             textTurn.text = "Turn: Player O";
-            //TurnChanged(EnumPlayerType.CROSS);
             turn = EnumPlayerType.CIRCLE;
         }
         textTurn.gameObject.SetActive(true);
@@ -277,9 +274,7 @@ public class GameManager : NetworkBehaviour
             {
                 box.gameObject.GetComponent<Image>().sprite = boxClear;
                 box.gameObject.GetComponent<Box>().value = -1;
-                //box.gameObject.GetComponent<Box>().OnBoxValueChanged();
             }
-
         }
         buttonReset.gameObject.SetActive(false);
         SetButtonInteractibility(false);

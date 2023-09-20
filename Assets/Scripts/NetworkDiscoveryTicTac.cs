@@ -20,8 +20,6 @@ public class NetworkDiscoveryTicTac : MonoBehaviour
     const string disconnectText = "Disconnect";
     const string connectText = "Connect";
     const string startGameText = "Start game";
-
-    //[SyncVar(hook = nameof(OnHostStop))]
     private bool isConnected = false;
 
     private void Awake()
@@ -74,15 +72,12 @@ public class NetworkDiscoveryTicTac : MonoBehaviour
             networkDiscovery.AdvertiseServer();
             textPlayer.text = "Player O";
             gameManager.textTurn.text = "Turn: Player O";
-            Debug.Log("Making HOST");
         }
         else
         {
             NetworkManager.singleton.StartClient(discoveredServers.Values.First().uri);
-            Debug.Log("Making CLIENT");
             textPlayer.text = "Player X";
             gameManager.textTurn.text = "Turn: Player X";
-
         }
 
         gameManager.InitGameBoard();

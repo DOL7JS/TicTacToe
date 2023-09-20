@@ -48,23 +48,22 @@ public class GameManager : NetworkBehaviour
                 gameboard[i, j].gameboard = gameboard;
             }
         }
-        textTurn.text = "Waiting for player ...";
         turn = EnumPlayerType.NONE;
-        Debug.Log("isClientOnly: " + (isClientOnly));
-        if (isClientOnly)
+        Debug.Log("Clint: " + !isServer);
+        if (!isServer)
         {
             textTurn.text = "Turn: Player X";
-            TurnChanged(EnumPlayerType.CROSS);
+            //TurnChanged(EnumPlayerType.CROSS);
             turn = EnumPlayerType.CROSS;
         }
+        else
+        {
+            textTurn.text = "Turn: Player O";
+            //TurnChanged(EnumPlayerType.CROSS);
+            turn = EnumPlayerType.CIRCLE;
+        }
         textTurn.gameObject.SetActive(true);
-
     }
-
-
-
-
-
     public void OnClickBox()
     {
         if (NetworkClient.localPlayer.gameObject.GetComponent<PlayerTicTac>().playerType != turn || turn == EnumPlayerType.NONE)
@@ -116,8 +115,6 @@ public class GameManager : NetworkBehaviour
         {
             Debug.Log("Already chosen position.");
         }
-
-
     }
 
     public void SetImage(Box box, int value)
@@ -255,6 +252,7 @@ public class GameManager : NetworkBehaviour
 
     public void OnClickButtonReset()
     {
+
         textTurn.text = turn == EnumPlayerType.CROSS ? "Turn: Player X" : "Turn: Player O";
         GameStateChanged(textTurn.text);
         foreach (Transform box in playground.GetComponentsInChildren<Transform>())
@@ -270,7 +268,23 @@ public class GameManager : NetworkBehaviour
         buttonReset.gameObject.SetActive(false);
         SetButtonInteractibility(true);
     }
-    private void SetButtonInteractibility(bool value)
+    public void OnDisconnected()
+    {
+        textTurn.text = "";
+        foreach (Transform box in playground.GetComponentsInChildren<Transform>())
+        {
+            if (box.gameObject.GetComponent<Image>() != null)
+            {
+                box.gameObject.GetComponent<Image>().sprite = boxClear;
+                box.gameObject.GetComponent<Box>().value = -1;
+                //box.gameObject.GetComponent<Box>().OnBoxValueChanged();
+            }
+
+        }
+        buttonReset.gameObject.SetActive(false);
+        SetButtonInteractibility(false);
+    }
+    public void SetButtonInteractibility(bool value)
     {
         foreach (Transform box in playground.GetComponentsInChildren<Transform>())
         {

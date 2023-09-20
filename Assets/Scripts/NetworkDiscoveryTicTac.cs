@@ -48,11 +48,18 @@ public class NetworkDiscoveryTicTac : MonoBehaviour
     {
         if (isConnected)
         {
-            gameManager.OnClickButtonReset();
+            gameManager.OnDisconnected();
             discoveredServers.Clear();
-            NetworkManager.singleton.StopHost();
+            if (NetworkServer.active)
+            {
+                NetworkManager.singleton.StopHost();
+            }
+            else
+            {
+                NetworkManager.singleton.StopClient();
+            }
             networkDiscovery.StartDiscovery();
-            textConnect.text = connectText;
+            textConnect.text = startGameText;
             gameManager.textTurn.gameObject.SetActive(false);
             isConnected = false;
             return;
@@ -66,6 +73,7 @@ public class NetworkDiscoveryTicTac : MonoBehaviour
             NetworkManager.singleton.StartHost();
             networkDiscovery.AdvertiseServer();
             textPlayer.text = "Player O";
+            gameManager.textTurn.text = "Turn: Player O";
             Debug.Log("Making HOST");
         }
         else
@@ -73,11 +81,15 @@ public class NetworkDiscoveryTicTac : MonoBehaviour
             NetworkManager.singleton.StartClient(discoveredServers.Values.First().uri);
             Debug.Log("Making CLIENT");
             textPlayer.text = "Player X";
+            gameManager.textTurn.text = "Turn: Player X";
 
         }
+
+        gameManager.InitGameBoard();
         textConnect.text = disconnectText;
         isConnected = true;
         gameManager.textTurn.gameObject.SetActive(true);
+        gameManager.SetButtonInteractibility(true);
     }
 
     public void OnDiscoveredServer(ServerResponse info)

@@ -548,6 +548,7 @@ GameObject:
   - component: {fileID: 348147884}
   - component: {fileID: 348147883}
   - component: {fileID: 348147888}
+  - component: {fileID: 348147889}
   m_Layer: 0
   m_Name: NetworkManagerTic
   m_TagString: Untagged
@@ -626,7 +627,7 @@ MonoBehaviour:
     deliveryTimeEmaDuration: 2
   connectionQualityInterval: 3
   timeInterpolationGui: 0
-  gameManager: {fileID: 1130972085}
+  gameManager: {fileID: 1130972087}
   playground: {fileID: 1140205342}
   textPlayer: {fileID: 1139318191}
 --- !u!114 &348147885
@@ -656,7 +657,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &348147888
 MonoBehaviour:
@@ -690,7 +691,32 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 348147889}
+        m_TargetAssemblyTypeName: Mirror.Discovery.NetworkDiscoveryHUD, Mirror.Components
+        m_MethodName: OnDiscoveredServer
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   secretHandshake: -7928935991875099778
+--- !u!114 &348147889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 348147882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88c37d3deca7a834d80cfd8d3cfcc510, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  networkDiscovery: {fileID: 348147888}
 --- !u!1 &456433908
 GameObject:
   m_ObjectHideFlags: 0
@@ -922,50 +948,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!1 &509844363
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 509844365}
-  - component: {fileID: 509844364}
-  m_Layer: 0
-  m_Name: BoxHandler
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &509844364
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 509844363}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8e317b2ca4d64f40ad86b6e61295e78, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &509844365
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 509844363}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 763.8559, y: 1042.7654, z: 4.06931}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1660,7 +1642,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &954035102
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1754,7 +1736,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1130972087
 MonoBehaviour:
@@ -1774,6 +1756,7 @@ MonoBehaviour:
   textTurn: {fileID: 954035103}
   buttonReset: {fileID: 1623138108}
   playground: {fileID: 1140205342}
+  turn: 0
 --- !u!114 &1130972088
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1964,7 +1947,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   networkDiscovery: {fileID: 348147888}
+  gameManager: {fileID: 1130972087}
   textConnect: {fileID: 782583367}
+  textPlayer: {fileID: 1139318191}
 --- !u!4 &1200080433
 Transform:
   m_ObjectHideFlags: 0
@@ -1978,7 +1963,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1314135508
 PrefabInstance:
@@ -1989,7 +1974,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 6692628192442534763, guid: 2fc614fd28c8fb946bd96e19bc3f7e1d, type: 3}
       propertyPath: m_RootOrder
-      value: 6
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6692628192442534763, guid: 2fc614fd28c8fb946bd96e19bc3f7e1d, type: 3}
       propertyPath: m_LocalPosition.x

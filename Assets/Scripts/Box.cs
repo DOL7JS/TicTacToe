@@ -27,11 +27,8 @@ public class Box : NetworkBehaviour
 
     private void OnToggleStateChanged(int oldState, int newState)
     {
-        Debug.Log("OnToggleStateChanged: " + newState);
-
         if (newState == -1)
         {
-            Debug.Log("ZERO: " + newState);
             gameObject.transform.GetComponent<Image>().sprite = Images.BoxClear;
             return;
         }

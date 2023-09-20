@@ -10,7 +10,6 @@ public class PlayerTicTac : MonoBehaviour
     protected virtual void Awake()
     {
         ActivePlayers.Add(this);
-        Debug.Log("Player added");
         if (ActivePlayers.Count > 1)
         {
             ActivePlayers[0].playerType = EnumPlayerType.CIRCLE;

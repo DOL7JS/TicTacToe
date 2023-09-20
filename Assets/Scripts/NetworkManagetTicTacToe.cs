@@ -9,25 +9,18 @@ namespace Mirror.Examples.Pong
     [AddComponentMenu("")]
     public class NetworkManagetTicTacToe : NetworkManager
     {
-        public GameObject gameManager;
+        public GameManager gameManager;
         public GameObject playground;
-        [SerializeField]
-        Text textPlayer;
-
-
-        public override void OnServerAddPlayer(NetworkConnectionToClient conn)
-        {
-            base.OnServerAddPlayer(conn);
-            if (numPlayers == 2)
-            {
-                textPlayer.text = "Player O";
-            }
-        }
-
+     
         public override void OnServerDisconnect(NetworkConnectionToClient conn)
         {
             // call base functionality (actually destroys the player)
             base.OnServerDisconnect(conn);
+            gameManager.textTurn.gameObject.SetActive(false);
+        }
+        private void OnDisconnectedFromServer()
+        {
+            Debug.Log("DISCONNECTED");
         }
     }
 }

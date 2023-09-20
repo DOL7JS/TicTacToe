@@ -4,7 +4,8 @@ using UnityEngine;
 
 public enum EnumPlayerType
 {
-
+    CIRCLE = 0,
     CROSS = 1,
-    CIRCLE = 0
+    NONE
+
 }

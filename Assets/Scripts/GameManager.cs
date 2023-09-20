@@ -13,15 +13,14 @@ public class GameManager : NetworkBehaviour
     Sprite boxCross;
     Sprite boxCircle;
     [SerializeField]
-    Text textTurn;
+    public Text textTurn;
     [SerializeField]
     Button buttonReset;
     [SerializeField]
     GameObject playground;
-  
-    //int player = 1;
+
     [SyncVar(hook = nameof(OnTurnStateChanged))]
-    EnumPlayerType turn = EnumPlayerType.CROSS;
+    public EnumPlayerType turn = EnumPlayerType.NONE;
     [SyncVar(hook = nameof(OnGameStateChanged))]
     string gameState = "playing";
     readonly int scoreToWin = 3;
@@ -34,11 +33,10 @@ public class GameManager : NetworkBehaviour
         boxClear = Images.BoxClear;
         boxCross = Images.BoxCross;
         boxCircle = Images.BoxCircle;
-       
     }
 
 
-    private void InitGameBoard()
+    public void InitGameBoard()
     {
         gameboard = new Box[3, 3];
         int boxCounter = 0;
@@ -50,43 +48,26 @@ public class GameManager : NetworkBehaviour
                 gameboard[i, j].gameboard = gameboard;
             }
         }
-        turn = EnumPlayerType.CROSS;
-        textTurn.text = "Turn: Player X";
-    }
-
-    [Command(requiresAuthority = false)]
-    public void GameStateChanged(string newState)
-    {
-        gameState = newState;
-    }
-
-    private void OnGameStateChanged(string oldState, string newState)
-    {
-        gameState = newState;
-        textTurn.text = newState;
-        buttonReset.gameObject.SetActive(gameState.Contains("wins") || gameState.Contains("GAME OVER"));
-        SetButtonInteractibility(true);
+        textTurn.text = "Waiting for player ...";
+        turn = EnumPlayerType.NONE;
+        Debug.Log("isClientOnly: " + (isClientOnly));
+        if (isClientOnly)
+        {
+            textTurn.text = "Turn: Player X";
+            TurnChanged(EnumPlayerType.CROSS);
+            turn = EnumPlayerType.CROSS;
+        }
+        textTurn.gameObject.SetActive(true);
 
     }
 
 
 
-    [Command(requiresAuthority = false)]
-    public void TurnChanged(EnumPlayerType newState)
-    {
-        turn = newState;
-    }
-
-    private void OnTurnStateChanged(EnumPlayerType oldState, EnumPlayerType newState)
-    {
-        turn = newState;
-        textTurn.text = turn == EnumPlayerType.CROSS ? "Turn: Player X" : "Turn: Player O";
-    }
 
 
     public void OnClickBox()
     {
-        if (NetworkClient.localPlayer.gameObject.GetComponent<PlayerTicTac>().playerType != turn)
+        if (NetworkClient.localPlayer.gameObject.GetComponent<PlayerTicTac>().playerType != turn || turn == EnumPlayerType.NONE)
         {
             Debug.Log("Not your turn");
             return;
@@ -157,6 +138,29 @@ public class GameManager : NetworkBehaviour
 
         }
         return true;
+    }
+    [Command(requiresAuthority = false)]
+    public void GameStateChanged(string newState)
+    {
+        gameState = newState;
+    }
+    private void OnGameStateChanged(string oldState, string newState)
+    {
+        gameState = newState;
+        textTurn.text = newState;
+        buttonReset.gameObject.SetActive(gameState.Contains("wins") || gameState.Contains("GAME OVER"));
+        SetButtonInteractibility(true);
+    }
+
+    [Command(requiresAuthority = false)]
+    public void TurnChanged(EnumPlayerType newState)
+    {
+        turn = newState;
+    }
+    private void OnTurnStateChanged(EnumPlayerType oldState, EnumPlayerType newState)
+    {
+        turn = newState;
+        textTurn.text = turn == EnumPlayerType.CROSS ? "Turn: Player X" : "Turn: Player O";
     }
 
     private bool CheckPotentialWin(int row, int column, int player)
@@ -275,20 +279,5 @@ public class GameManager : NetworkBehaviour
                 box.gameObject.GetComponent<Button>().interactable = value;
             }
         }
-    }
-    private void ShowGameBoard()
-    {
-        string mess = "";
-        for (int i = 0; i < gameboard.GetLength(0); i++)
-        {
-            for (int j = 0; j < gameboard.GetLength(1); j++)
-
-            {
-                mess += gameboard[i, j] + "| ";
-            }
-            mess += "\n";
-        }
-
-        Debug.Log(mess);
     }
 }

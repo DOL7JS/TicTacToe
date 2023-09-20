@@ -19,6 +19,13 @@ public class GameManager : NetworkBehaviour
     [SerializeField]
     GameObject playground;
 
+
+
+
+
+
+
+
     [SyncVar(hook = nameof(OnTurnStateChanged))]
     public EnumPlayerType turn = EnumPlayerType.NONE;
     [SyncVar(hook = nameof(OnGameStateChanged))]

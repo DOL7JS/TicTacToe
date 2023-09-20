@@ -25,12 +25,10 @@ public class NetworkDiscoveryTicTac : MonoBehaviour
         if (discoveredServers.Count == 0 && !textConnect.text.Equals("Start game"))
         {
             textConnect.text = "Start game";
-            Debug.Log("Start game");
         }
         else if (discoveredServers.Count > 0 && !textConnect.text.Equals("Connect"))
         {
             textConnect.text = "Connect";
-            Debug.Log("Connect: ");
         }
     }
 

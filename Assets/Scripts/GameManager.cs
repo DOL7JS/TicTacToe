@@ -28,10 +28,6 @@ public class GameManager : NetworkBehaviour
     private Box[,] gameboard;
 
 
-    private void Awake()
-    {
-       
-    }
     void Start()
     {
         InitGameBoard();
@@ -69,6 +65,8 @@ public class GameManager : NetworkBehaviour
         gameState = newState;
         textTurn.text = newState;
         buttonReset.gameObject.SetActive(gameState.Contains("wins") || gameState.Contains("GAME OVER"));
+        SetButtonInteractibility(true);
+
     }
 
 
@@ -253,7 +251,6 @@ public class GameManager : NetworkBehaviour
 
     public void OnClickButtonReset()
     {
-        //InitGameBoard();
         textTurn.text = turn == EnumPlayerType.CROSS ? "Turn: Player X" : "Turn: Player O";
         GameStateChanged(textTurn.text);
         foreach (Transform box in playground.GetComponentsInChildren<Transform>())
